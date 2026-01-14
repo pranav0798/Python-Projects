@@ -93,6 +93,11 @@ def main():
 ''' 
 
 1) def main function runs the main loop of the expense tracker application, handling user input and menu navigation.
+
+
+
+
+
 2) While True: keeps the program running until the user decides to exit.
 3) In Day 1 , we had print to show which option is selected.
 4) In Day 2, we will replace those print statements with actual function calls to add and view expenses.
