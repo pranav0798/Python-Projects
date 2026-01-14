@@ -20,7 +20,159 @@ if __name__ == "__main__":
 For Day 3 : We add the date field to each expense entry and update the add_expense function to capture the date from the user.
 For date field , we will use a tuple in the format (YYYY,MM,DD)
 We will also update the view_expenses function to display the date along with other expense details.
+
+For Day 4:
+File format: CSV-like text file
+
+File name: expenses.txt
+
+Each expense = one line
+
+1️⃣ The Common Structure
+
+Both lines follow this pattern:
+
+with open(file_name, mode) as file:
+    # work with file
+
+
+This has three important parts:
+
+open(...)
+
+with
+
+as file
+
+2️⃣ with open(FILE_NAME, "a")
+🔹 What "a" Means
+
+"a" = append mode
+
+Behavior:
+
+If file exists → add content at the end
+
+If file does not exist → create it
+
+Existing content is never erased
+
+🔹 What This Line Does (Plain English)
+
+“Open the file for writing, and always add new data at the end.”
+
+🔹 Why We Use It Here
+
+Each expense should be:
+
+Saved as a new line
+
+Without overwriting old expenses
+
+That’s exactly what append mode does.
+
+🔹 Example
+
+If file contains:
+
+2026,1,14,250,Food,Lunch
+
+
+After append:
+
+2026,1,14,250,Food,Lunch
+2026,1,15,100,Travel,Bus
+
+3️⃣ with open(FILE_NAME, "r")
+🔹 What "r" Means
+
+"r" = read mode
+
+Behavior:
+
+File must exist
+
+Opens file read-only
+
+Does not modify content
+
+If file does not exist:
+
+Python raises FileNotFoundError
+
+That’s why we wrap it in try/except.
+
+🔹 What This Line Does (Plain English)
+
+“Open the file so I can read its contents line by line.”
+
+🔹 Why We Use It Here
+
+At program start, we want to:
+
+Read stored expenses
+
+Convert them back into Python data structures
+
+4️⃣ Why We Use with (Very Important)
+❌ Without with
+
+You’d have to manually close the file:
+
+file = open(FILE_NAME, "r")
+# work
+file.close()
+
+
+If an error happens:
+
+File may stay open
+
+Causes resource leaks
+
+✅ With with
+with open(FILE_NAME, "r") as file:
+    # work
+
+
+Python guarantees:
+
+File opens safely
+
+File closes automatically
+
+Even if an error occurs
+
+This is called a context manager.
+
+5️⃣ Side-by-Side Comparison
+Line	Purpose	Creates file?	Modifies file?
+open(FILE_NAME, "a")	Save new expenses	✅ Yes	✅ Appends
+open(FILE_NAME, "r")	Load expenses	❌ No	❌ Read-only
+6️⃣ Mental Model (Memorize This)
+
+"a" → Add
+
+"r" → Read
+
+with → Open safely, close automatically
+
+One-Line Summary
+
+"a" adds new data safely, "r" reads existing data, and with guarantees proper file handling.
+
+This understanding will carry into:
+
+Logs
+
+ETL pipelines
+
+Data engineering
+
+Production systems
 '''
+
+FILE_NAME = "expenses.txt"
 
 expenses = []
 
@@ -67,7 +219,8 @@ def add_expense():
             "note": note
         }
         expenses.append(expense)
-        print("Expense added successfully.")
+        save_expenses_to_file(expense)
+        print("Expense added and saved successfully.")
 
     except ValueError:
         print("Invalid amount. Please enter a numeric value.")
@@ -102,8 +255,39 @@ def view_expenses():
 4) print(f"{idx}.{expense['category']} | {expense['amount']} | {expense['note']}") formats and displays each expense's details.
 5) f-strings are used for easier and more readable string formatting.
 6) | is used as a separator for better readability of expense details.
+7) save_expenses_to_file function saves a new expense entry to the expenses.txt file in CSV format.
+8) load_expenses_from_file function reads existing expenses from the expenses.txt file and loads them into the expenses list.
+9) line.strip().split(",") splits each line from the file into its components based on commas.
+10) except FileNotFoundError: handles the case where the expenses.txt file does not exist yet, allowing the program to continue without errors.
 '''
+def save_expenses_to_file():
+
+    with open(FILE_NAME, "a") as file:
+        year , month , day = expense["date"]
+        line = f"{year},{month},{day},{expense['amount']},{expense['category']},{expense['note']}\n"
+        file.write(line)
+
+def load_expenses_from_file():
+
+    try:
+        with open(FILE_NAME, "r") as file:
+            for line in file:
+                year, month, day, amount, category, note = line.strip().split(",")
+
+                expense =
+                {
+                    "date" : (int(year), int(month), int(day)),
+                    "amount": float(amount),
+                    "category": category,
+                    "note": note
+                }
+                expenses.append(expense)
+    except FileNotFoundError:
+        pass
+
 def main():
+    load_expenses_from_file()
+
     while True:
         show_menu()
         choice = input("Enter your choice(1 to 3):")
