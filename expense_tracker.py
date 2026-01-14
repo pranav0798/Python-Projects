@@ -17,6 +17,9 @@ def main():
 if __name__ == "__main__":
     main()
 
+For Day 3 : We add the date field to each expense entry and update the add_expense function to capture the date from the user.
+For date field , we will use a tuple in the format (YYYY,MM,DD)
+We will also update the view_expenses function to display the date along with other expense details.
 '''
 
 expenses = []
@@ -28,11 +31,27 @@ def show_menu():
     print("3. Exit")
 '''
 1)show_menu function displays the main menu options for the expense tracker application.
-
+2) len(parts) is used to ensure the date input is in the correct format (YYYY-MM-DD). If value is not 3, it indicates an invalid format.
+3) year, month, day = parts unpacks the split date input into individual components for further processing.
 '''
 
 def add_expense():
     try:
+        date_input = input(" Enter the date (YYYY-MM-DD):").strip()
+        parts = date_input.split("-")
+        
+        if len(parts)!=3:
+            print("Invalid format , please use yyyy-mm-dd for example 2024-12-31")
+            return
+        
+        year, month, day = parts
+
+        if not (year.isdigit() and month.isdigit() and day.isdigit()):
+            print("Please enter numerical date values.")
+            return
+        
+        date = (int(year), int(month), int(day))
+
         amount = float(input("Enter expense amount:"))
         if amount <=0:
             print("Amount must be greater than zero.")
@@ -42,6 +61,7 @@ def add_expense():
         note = input("Enter a short note:").strip()
 
         expense = {
+            "date": date,
             "amount": amount,
             "category": category,
             "note": note
@@ -56,6 +76,8 @@ def add_expense():
 1) add_expense function prompts the user to input expense details and adds the expense to the expenses list.
 2) .strip() is used to remove any leading or trailing whitespace from user input.
 3) try-except block handles invalid numeric input for the amount.
+4) For Day 3 if not expenses(): loop remains same as Day 2
+5) 
 
 '''
 def view_expenses():
@@ -65,7 +87,13 @@ def view_expenses():
     
     print("\n--- Your Expenses ---")
     for idx,expense in enumerate(expenses, start=1):
-        print(f"{idx}.{expense['category']} | {expense['amount']} | {expense['note']}")
+        year, month, day = expense["date"]
+        print(
+            f"{idx}.{year}-{month:02d}-{day:02d} | "
+            f"{expense['category']} | "
+            f"{expense['amount']} | "
+            f"{expense['note']}"
+            )
 
 '''
 1) if not expenses: checks if the expenses list is empty and informs the user if there are no recorded expenses.
