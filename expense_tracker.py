@@ -170,17 +170,36 @@ ETL pipelines
 Data engineering
 
 Production systems
+
+For Day 5:
+
+Import Regex module to validate date format
+Define a date regex
+^ start of string
+\d{4} four digits (year)
+\d{2} two digits (month)
+\d{2} two digits (day)
+- hyphen separator
+$ end of string
+r = raw string literal
+Create search_expenses() function to find expenses by category or date
+wire search_expenses() into main menu
 '''
+
+import re
 
 FILE_NAME = "expenses.txt"
 
 expenses = []
 
+DATE_PATTERN = r"^\d{4}-\d{2}-\d{2}$"
+
 def show_menu():
     print("\n=== Expense Tracker ===")
     print("1. Add Expense")
     print("2. view Expenses")
-    print("3. Exit")
+    print("3. Search Expenses")
+    print("4. Exit")
 '''
 1)show_menu function displays the main menu options for the expense tracker application.
 2) len(parts) is used to ensure the date input is in the correct format (YYYY-MM-DD). If value is not 3, it indicates an invalid format.
@@ -190,19 +209,12 @@ def show_menu():
 def add_expense():
     try:
         date_input = input(" Enter the date (YYYY-MM-DD):").strip()
-        parts = date_input.split("-")
-        
-        if len(parts)!=3:
-            print("Invalid format , please use yyyy-mm-dd for example 2024-12-31")
-            return
-        
-        year, month, day = parts
 
-        if not (year.isdigit() and month.isdigit() and day.isdigit()):
-            print("Please enter numerical date values.")
+        if not re.match(DATE_PATTERN, date_input):
+            print("Enter date in YYYY-MM-DD format.")
             return
-        
-        date = (int(year), int(month), int(day))
+        year, month, day = map(int, date_input.split("-"))
+        date = (year,month,day)
 
         amount = float(input("Enter expense amount:"))
         if amount <=0:
@@ -259,11 +271,13 @@ def view_expenses():
 8) load_expenses_from_file function reads existing expenses from the expenses.txt file and loads them into the expenses list.
 9) line.strip().split(",") splits each line from the file into its components based on commas.
 10) except FileNotFoundError: handles the case where the expenses.txt file does not exist yet, allowing the program to continue without errors.
+11) expense should be defined inside the function not just used directly.
+12) The function header was def save_expenses_to_file(): changed to def save_expenses_to_file(expense):
 '''
-def save_expenses_to_file():
+def save_expenses_to_file(expense):
 
     with open(FILE_NAME, "a") as file:
-        year , month , day = expense["date"]
+        year, month, day = expense["date"]
         line = f"{year},{month},{day},{expense['amount']},{expense['category']},{expense['note']}\n"
         file.write(line)
 
@@ -274,8 +288,8 @@ def load_expenses_from_file():
             for line in file:
                 year, month, day, amount, category, note = line.strip().split(",")
 
-                expense =
-                {
+                expense = {
+                
                     "date" : (int(year), int(month), int(day)),
                     "amount": float(amount),
                     "category": category,
@@ -285,18 +299,60 @@ def load_expenses_from_file():
     except FileNotFoundError:
         pass
 
+'''
+1) The goal is to look through all saved expenses and find those that match a user-provided keyword.
+2) The keyword can be food expenses or date expenses or notes
+3) if not keyword : Checks if user presses enter without typing anything , not keyword means nothing was entered.
+4) pattern = re.compile(keyword,re.IGNORECASE)  we are creating a search tool
+5) syntax is re.compile(pattern,flags)  
+6) we use found = false to assume nothing is found initially.
+7) date_str = f"{expense['date'][0]}-{expense['date'][1]:02d}-{expense['date'][2]:02d}" converts the date tuple into a string format for easier searching.
+8) searchable_text = f"{date_str} {expense['category']} {expense['note']}" combines date, category, and note into one string to search through.
+9) found = True searches through the combined string for the keyword using regex.
+'''
+def search_expenses():
+    keyword = input("Enter search by date , Category or note:").strip()
+
+    if not keyword:
+        print("No keyword entered . Returning to main menu")
+        return
+    
+    pattern = re.compile(keyword, re.IGNORECASE)
+    found = False
+
+    print("\n --- Search Results ---")
+
+    for idx, expense in enumerate(expenses, start=1):
+        date_str = f"{expense['date'][0]}-{expense['date'][1]:02d}-{expense['date'][2]:02d}"
+
+        searchable_text = f"{date_str} {expense['category']} {expense['note']}"
+
+        if pattern.search(searchable_text): # .search() is an inbulilt method of regex pattern object
+            found = True
+            print(
+                f"{idx}.{date_str} | "
+                f"{expense['category']} | "
+                f"{expense['amount']} | "
+                f"{expense['note']}"
+            )
+    if not found:
+        print("No matching expenses found.") 
+
+
 def main():
     load_expenses_from_file()
 
     while True:
         show_menu()
-        choice = input("Enter your choice(1 to 3):")
+        choice = input("Enter your choice(1 to 4):")
 
         if choice == "1":
             add_expense()
         elif choice == "2":
             view_expenses()
         elif choice == "3":
+            search_expenses()
+        elif choice == "4":
             print("Exiting the program")
             break
         else:
